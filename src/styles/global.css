@@ -1,0 +1,57 @@
+:root {
+    --primary-bg: #faf6f1;
+    --secondary-bg: #f5ede5;
+    --accent-1: #d4b5a0;
+    --accent-2: #c9a88f;
+    --accent-3: #be9b7f;
+    --text-dark: #5c4a42;
+    --text-light: #8b7369;
+    --white: #ffffff;
+    --shadow: 0 8px 24px rgba(92, 74, 66, 0.12);
+    --shadow-hover: 0 12px 36px rgba(92, 74, 66, 0.18);
+    --success: #6da87c;
+    --error: #d97777;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+    color: var(--text-dark);
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent-1);
+    outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--primary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-2);
+}

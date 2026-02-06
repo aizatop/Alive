@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AliveAgain - Путешествия по миру</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+            </ul>
+        </div>
+    </nav>
+
+    <script type="module">
+        import { 
+            supabase, 
+            recordVisit, 
+            getCurrentUser 
+        } from './supabase-client.js'
+
+        // Отслеживание кликов на видео (посещения стран)
+        document.querySelectorAll('.video-link').forEach(link => {
+            link.addEventListener('click', async function(e) {
+                const card = this.closest('.country-card')
+                const countryName = card.querySelector('h2')?.textContent
+                
+                // Получаем текущего пользователя
+                const { data: { user }, error } = await getCurrentUser()
+                
+                if (user) {
+                    // Записываем посещение в базу данных
+                    const result = await recordVisit(user.id, countryName, 30)
+                    if (result.success) {
+                        console.log(`✅ Посещение ${countryName} записано!`)
+                    }
+                }
+            })
+        })
+
+        // Интерактивные карточки
+        document.querySelectorAll('.country-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Не переходим по ссылке видео при клике на карточку
+                if (e.target.closest('.video-link')) {
+                    return
+                }
+                
+                // Закрываем другие карточки
+                document.querySelectorAll('.country-card').forEach(otherCard => {
+                    if (otherCard !== card) {
+                        otherCard.classList.remove('expanded')
+                    }
+                })
+                
+                // Переключаем текущую карточку
+                this.classList.toggle('expanded')
+            })
+        })
+
+        // Проверка статуса подключения к Supabase
+        async function checkSupabaseConnection() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('count')
+                    .limit(1)
+                
+                if (error) {
+                    console.warn('⚠️ Supabase подключен с ограничениями:', error.message)
+                } else {
+                    console.log('✅ Supabase успешно подключен!')
+                }
+            } catch (err) {
+                console.error('❌ Ошибка подключения к Supabase:', err)
+            }
+        }
+
+        // Проверяем подключение при загрузке
+        window.addEventListener('load', checkSupabaseConnection)
+    </script>
+</body>
+</html>
