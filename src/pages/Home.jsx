@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCurrentUser, signOut, recordVisit } from '../services/supabase'
-import CountryCard from '../components/CountryCard'
+import LazyCountryCard from '../components/LazyCountryCard'
 import LoginModal from '../components/LoginModal'
 import Header from '../components/Header'
 import AboutProject from '../components/AboutProject'
@@ -86,17 +86,27 @@ export default function Home() {
 
   const handleVideoClick = async (countryName) => {
     if (user) {
-      const result = await recordVisit(user.id, countryName, 30)
-      if (result.success) {
-        console.log(`✅ Посещение ${countryName} записано!`)
+      try {
+        const result = await recordVisit(user.id, countryName, 30)
+        if (result.success) {
+          console.log(`✅ Посещение ${countryName} записано!`)
+        } else {
+          console.error('Ошибка записи посещения:', result.error)
+        }
+      } catch (error) {
+        console.error('Ошибка при записи посещения:', error)
       }
     }
   }
 
   const handleLogout = async () => {
-    await signOut()
-    setUser(null)
-    setExpandedCountry(null)
+    try {
+      await signOut()
+      setUser(null)
+      setExpandedCountry(null)
+    } catch (error) {
+      console.error('Ошибка при выходе:', error)
+    }
   }
 
   const handleLoginSuccess = async () => {
@@ -137,7 +147,7 @@ export default function Home() {
       <main className="container">
         <div className="countries-grid">
           {COUNTRIES.map(country => (
-            <CountryCard
+            <LazyCountryCard
               key={country.id}
               country={country}
               isExpanded={expandedCountry === country.id}
