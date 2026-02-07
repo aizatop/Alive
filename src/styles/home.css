@@ -440,9 +440,10 @@
     max-width: 1600px;
     margin: 40px auto;
     padding: 0 15px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 20px;
+    justify-content: center;
 }
 
 /* Compact Country Card Styles */
@@ -458,6 +459,8 @@
     height: 100%;
     border: 2px solid transparent;
     position: relative;
+    width: 280px;
+    flex-shrink: 0;
 }
 
 .country-card:hover {
@@ -1055,10 +1058,16 @@ footer p {
 
     .countries-container,
     .countries-grid {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        flex-direction: column;
+        align-items: center;
         gap: 14px;
         padding: 0 12px;
         margin: 30px auto;
+    }
+
+    .country-card {
+        width: 100%;
+        max-width: 280px;
     }
 
     .about-project {
@@ -1249,13 +1258,16 @@ footer p {
 
     .countries-container,
     .countries-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: center;
         gap: 12px;
         padding: 0 10px;
         margin: 20px auto;
     }
 
     .country-card {
+        width: 100%;
+        max-width: 280px;
         border-radius: 16px;
     }
 

@@ -14,6 +14,7 @@ export default function Header({ onLogout, userName }) {
           <a href="#france" className="nav-link">🇫🇷 Франция</a>
           <a href="#italy" className="nav-link">🇮🇹 Италия</a>
           <a href="#united-kingdom" className="nav-link">🇬🇧 Британия</a>
+          <a href="/chat" className="nav-link">💬 Чат</a>
         </div>
 
         <div className="nav-right">

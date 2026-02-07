@@ -95,15 +95,67 @@ CREATE TABLE friends (
 
 ### Таблица: messages (Сообщения)
 ```sql
-CREATE TABLE messages (
+-- Поддерживает и приватные сообщения, и публичный (комнатный) чат.
+CREATE TABLE IF NOT EXISTS messages (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   sender_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  recipient_id UUID NULL REFERENCES users(id) ON DELETE CASCADE, -- NULL = комнатный (публичный) чат
   content TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   is_read BOOLEAN DEFAULT FALSE
 );
+
+-- Рекомендуется: индекс по created_at и recipient_id
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_recipient_id ON messages (recipient_id);
 ```
+
+#### Миграция: добавить поддержку комнатного чата + RLS (рекомендуется)
+Если у вас уже была создана таблица `messages` с `recipient_id NOT NULL`, выполните следующую idempotent‑миграцию (Supabase SQL Editor или `supabase` CLI):
+
+```sql
+-- Выполните миграцию из файла `supabase-migrations/001_create_messages_room_chat.sql` (идемпотентная)
+-- Вручную (если нужно):
+ALTER TABLE messages ALTER COLUMN recipient_id DROP NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages (created_at DESC);
+
+-- Включите RLS и создайте политики (безопасный доступ только для авторизованных):
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "select_room_and_conversation"
+  ON public.messages
+  FOR SELECT
+  USING (
+    auth.role() = 'authenticated' AND (
+      recipient_id IS NULL
+      OR auth.uid() = sender_id
+      OR auth.uid() = recipient_id
+    )
+  );
+
+CREATE POLICY "insert_messages_authenticated"
+  ON public.messages
+  FOR INSERT
+  WITH CHECK (
+    auth.role() = 'authenticated' AND auth.uid() = sender_id
+    AND (recipient_id IS NULL OR recipient_id = auth.uid())
+  );
+
+CREATE POLICY "update_own_messages"
+  ON public.messages
+  FOR UPDATE
+  USING (auth.uid() = sender_id)
+  WITH CHECK (auth.uid() = sender_id);
+
+CREATE POLICY "delete_own_messages"
+  ON public.messages
+  FOR DELETE
+  USING (auth.uid() = sender_id);
+```
+
+**Как применить миграцию:**
+- В SQL Editor Supabase: вставьте содержимое `supabase-migrations/001_create_messages_room_chat.sql` и нажмите Run.  
+- Или с CLI: `supabase db push` / `psql` с подключением к базе — файл находится в `supabase-migrations/001_create_messages_room_chat.sql`.
 
 ### Создание таблиц в Supabase:
 1. Откройте **SQL Editor** в левой панели

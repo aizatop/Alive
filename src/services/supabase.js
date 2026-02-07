@@ -254,6 +254,58 @@ export function subscribeToMessages(userId, callback) {
     .subscribe()
 }
 
+// --- Публичный комнатный чат (recipient_id IS NULL) ---
+export async function getRoomMessages() {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .is('recipient_id', null)
+      .order('created_at', { ascending: true })
+
+    if (error) throw error
+    return { success: true, messages: data }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+export async function sendRoomMessage(senderId, content) {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([
+        {
+          sender_id: senderId,
+          recipient_id: null,
+          content: content
+        }
+      ])
+      .select()
+
+    if (error) throw error
+    return { success: true, message: data[0] }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+export function subscribeToRoom(callback) {
+  return supabase
+    .channel('messages:recipient_id.is.null')
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `recipient_id.is.null`
+      },
+      (payload) => callback(payload.new)
+    )
+    .subscribe()
+}
+
 export function subscribeToFriendRequests(userId, callback) {
   return supabase
     .channel(`friends:friend_id=eq.${userId}`)
