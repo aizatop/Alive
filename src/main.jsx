@@ -34,3 +34,10 @@ setTimeout(() => {
     loading.style.display = 'none'
   }
 }, 100)
+
+// Обработка редиректов с 404 страницы
+if (sessionStorage.redirect) {
+  const redirect = sessionStorage.redirect
+  delete sessionStorage.redirect
+  window.history.replaceState({}, '', redirect)
+}
